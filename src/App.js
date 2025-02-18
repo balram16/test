@@ -333,26 +333,30 @@ const addContact = async () => {
 };
 
 
-  useEffect(() => {
-    async function loadBlockchainData() {
-      if (window.ethereum) {
-        const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
+useEffect(() => {
+  const loadBlockchainData = async () => {
+    if (window.ethereum) {
+      const web3 = new Web3(window.ethereum);
 
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-        const accounts = await web3Instance.eth.getAccounts();
-        setAccount(accounts[0]);
+      // Request account access
+      await window.ethereum.request({ method: "eth_requestAccounts" });
 
-        const chatContract = new web3Instance.eth.Contract(contractABI, contractAddress);
-        setContract(chatContract);
+      // Get the current account
+      const accounts = await web3.eth.getAccounts();
+      setAccount(accounts[0]);
 
-        const contacts = await chatContract.methods.getContacts().call({ from: accounts[0] });
-        setContacts(contacts);
-      } else {
-        alert("Please install MetaMask!");
-      }
+      // Listen for account changes
+      window.ethereum.on("accountsChanged", (accounts) => {
+        setAccount(accounts[0]); // Update the account state
+        window.location.reload(); // Optional: Reload the app to refresh data
+      });
+    } else {
+      alert("Please install MetaMask!");
     }
-    loadBlockchainData();
-  }, []);
+  };
+
+  loadBlockchainData();
+}, []);
 
   return (
     <div className="chat-app">
