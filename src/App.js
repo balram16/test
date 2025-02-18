@@ -334,7 +334,7 @@ const App = () => {
   useEffect(() => {
     async function loadBlockchainData() {
       if (window.ethereum) {
-        const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
+        const web3Instance = new Web3("https://59b1-120-138-99-152.ngrok-free.app);
 
         await window.ethereum.request({ method: "eth_requestAccounts" });
         const accounts = await web3Instance.eth.getAccounts();
