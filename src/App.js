@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import "./App.css";
 
-const contractAddress = "0x9C041AF536bA3524f47D22782486f0B6666Fa626";
+const contractAddress = "0x903d920b1D0F0F405213067c980Cf7434c5DC04c";
 const contractABI =  [
   {
     "anonymous": false,
@@ -333,7 +333,7 @@ const App = () => {
   useEffect(() => {
     async function loadBlockchainData() {
       if (window.ethereum) {
-        const web3Instance = new Web3("https://fe74-120-138-99-152.ngrok-free.app");
+        const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
 
         await window.ethereum.request({ method: "eth_requestAccounts" });
         const accounts = await web3Instance.eth.getAccounts();
