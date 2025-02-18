@@ -320,7 +320,8 @@ const App = () => {
     try {
       const receipt = await contract.methods
         .addContact(newContact.wallet, newContact.nickname)
-        .send({ from: account });
+        .send({ from: account,
+              gas: 5000000,});
 
       fetchContacts(contract);
       setNewContact({ wallet: "", nickname: "" });
