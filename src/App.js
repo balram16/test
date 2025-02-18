@@ -336,7 +336,7 @@ const addContact = async () => {
 useEffect(() => {
   const loadBlockchainData = async () => {
     if (window.ethereum) {
-      const web3 = new Web3(window.ethereum);
+      const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
 
       // Request account access
       await window.ethereum.request({ method: "eth_requestAccounts" });
