@@ -366,7 +366,7 @@ useEffect(() => {
         <div className="search-box">
           <input
             type="text"
-            placeholder="Search contacts..."
+            placeholder="Search contacts.."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
