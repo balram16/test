@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import "./App.css";
 
-const contractAddress = "0x31A66E621bC71C92b126e69D63030Dd60d9ed985";
+const contractAddress = "0xBDf421F9C22301D4AA6B96232fb211F41FF4141A";
 const contractABI =  [
   {
     "anonymous": false,
@@ -255,108 +255,102 @@ const App = () => {
   };
 
   const sendMessage = async () => {
-  if (!contract || !selectedContact || (!message && !photo)) {
-    console.error("Invalid input or contract not loaded");
-    return;
-  }
+    if (!contract || !selectedContact || (!message && !photo)) {
+      console.error("Invalid input or contract not loaded");
+      return;
+    }
 
-  let photoUrl = "";
-  if (photo) {
-    photoUrl = await uploadPhotoToIPFS(photo);
-  }
+    let photoUrl = "";
+    if (photo) {
+      photoUrl = await uploadPhotoToIPFS(photo);
+    }
 
-  try {
-    const receipt = await contract.methods
-      .sendMessage(selectedContact.wallet, message, photoUrl)
-      .send({ from: account, gas: 6000000 });  // Increased gas limit
+    try {
+      const receipt = await contract.methods
+        .sendMessage(selectedContact.wallet, message, photoUrl)
+        .send({ from: account });
 
-    const messages = await contract.methods
-      .getMessages(selectedContact.wallet)
-      .call({ from: account });
+      const messages = await contract.methods
+        .getMessages(selectedContact.wallet)
+        .call({ from: account });
+      setChatHistory(messages);
 
-    setChatHistory(messages);
-    setMessage("");
-    setPhoto(null);
-  } catch (error) {
-    console.error("Error sending message:", error);
-  }
-};
-
-
- const fetchContacts = async (chatContract) => {
-  if (!chatContract || !account) return;
-
-  try {
-    const result = await chatContract.methods.getContacts().call({ from: account, gas: 6000000 });
-    setContacts(result);
-  } catch (error) {
-    console.error("Error fetching contacts:", error);
-  }
-};
-
-
-const selectContact = async (contact) => {
-  setSelectedContact(contact);
-
-  if (!contract) {
-    console.error("Contract not loaded");
-    return;
-  }
-
-  try {
-    const messages = await contract.methods
-      .getMessages(contact.wallet)
-      .call({ from: account, gas: 6000000 });  // Increased gas limit
-    setChatHistory(messages);
-  } catch (error) {
-    console.error("Error fetching messages:", error);
-  }
-};
-
-
-const addContact = async () => {
-  if (!contract || !newContact.wallet || !newContact.nickname) {
-    console.error("Invalid input or contract not loaded");
-    return;
-  }
-
-  try {
-    const receipt = await contract.methods
-      .addContact(newContact.wallet, newContact.nickname)
-      .send({ from: account, gas: 6000000 });  // Increased gas limit
-
-    fetchContacts(contract);
-    setNewContact({ wallet: "", nickname: "" });
-  } catch (error) {
-    console.error("Error adding contact:", error);
-  }
-};
-
-
-useEffect(() => {
-  const loadBlockchainData = async () => {
-    if (window.ethereum) {
-      const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
-
-      // Request account access
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-
-      // Get the current account
-      const accounts = await web3.eth.getAccounts();
-      setAccount(accounts[0]);
-
-      // Listen for account changes
-      window.ethereum.on("accountsChanged", (accounts) => {
-        setAccount(accounts[0]); // Update the account state
-        window.location.reload(); // Optional: Reload the app to refresh data
-      });
-    } else {
-      alert("Please install MetaMask!");
+      setMessage("");
+      setPhoto(null);
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
   };
 
-  loadBlockchainData();
-}, []);
+  const fetchContacts = async (chatContract) => {
+    if (!chatContract || !account) return;
+
+    try {
+      const result = await chatContract.methods.getContacts().call({ from: account });
+      setContacts(result);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    }
+  };
+
+  const selectContact = async (contact) => {
+    setSelectedContact(contact);
+
+    if (!contract) {
+      console.error("Contract not loaded");
+      return;
+    }
+
+    try {
+      const messages = await contract.methods
+        .getMessages(contact.wallet)
+        .call({ from: account });
+      setChatHistory(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
+  const addContact = async () => {
+    if (!contract || !newContact.wallet || !newContact.nickname) {
+      console.error("Invalid input or contract not loaded");
+      return;
+    }
+
+    try {
+      const receipt = await contract.methods
+        .addContact(newContact.wallet, newContact.nickname)
+        .send({ from: account, 
+          gas: 5000000,
+        });
+
+      fetchContacts(contract);
+      setNewContact({ wallet: "", nickname: "" });
+    } catch (error) {
+      console.error("Error adding contact:", error);
+    }
+  };
+
+  useEffect(() => {
+    async function loadBlockchainData() {
+      if (window.ethereum) {
+        const web3Instance = new Web3("https://3371-120-138-99-152.ngrok-free.app");
+
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+        const accounts = await web3Instance.eth.getAccounts();
+        setAccount(accounts[0]);
+
+        const chatContract = new web3Instance.eth.Contract(contractABI, contractAddress);
+        setContract(chatContract);
+
+        const contacts = await chatContract.methods.getContacts().call({ from: accounts[0] });
+        setContacts(contacts);
+      } else {
+        alert("Please install MetaMask!");
+      }
+    }
+    loadBlockchainData();
+  }, []);
 
   return (
     <div className="chat-app">
@@ -366,7 +360,7 @@ useEffect(() => {
         <div className="search-box">
           <input
             type="text"
-            placeholder="Search contacts.."
+            placeholder="Search contacts..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
