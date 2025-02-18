@@ -255,80 +255,83 @@ const App = () => {
   };
 
   const sendMessage = async () => {
-    if (!contract || !selectedContact || (!message && !photo)) {
-      console.error("Invalid input or contract not loaded");
-      return;
-    }
+  if (!contract || !selectedContact || (!message && !photo)) {
+    console.error("Invalid input or contract not loaded");
+    return;
+  }
 
-    let photoUrl = "";
-    if (photo) {
-      photoUrl = await uploadPhotoToIPFS(photo);
-    }
+  let photoUrl = "";
+  if (photo) {
+    photoUrl = await uploadPhotoToIPFS(photo);
+  }
 
-    try {
-      const receipt = await contract.methods
-        .sendMessage(selectedContact.wallet, message, photoUrl)
-        .send({ from: account });
+  try {
+    const receipt = await contract.methods
+      .sendMessage(selectedContact.wallet, message, photoUrl)
+      .send({ from: account, gas: 6000000 });  // Increased gas limit
 
-      const messages = await contract.methods
-        .getMessages(selectedContact.wallet)
-        .call({ from: account });
-      setChatHistory(messages);
+    const messages = await contract.methods
+      .getMessages(selectedContact.wallet)
+      .call({ from: account });
 
-      setMessage("");
-      setPhoto(null);
-    } catch (error) {
-      console.error("Error sending message:", error);
-    }
-  };
+    setChatHistory(messages);
+    setMessage("");
+    setPhoto(null);
+  } catch (error) {
+    console.error("Error sending message:", error);
+  }
+};
 
-  const fetchContacts = async (chatContract) => {
-    if (!chatContract || !account) return;
 
-    try {
-      const result = await chatContract.methods.getContacts().call({ from: account });
-      setContacts(result);
-    } catch (error) {
-      console.error("Error fetching contacts:", error);
-    }
-  };
+ const fetchContacts = async (chatContract) => {
+  if (!chatContract || !account) return;
 
-  const selectContact = async (contact) => {
-    setSelectedContact(contact);
+  try {
+    const result = await chatContract.methods.getContacts().call({ from: account, gas: 6000000 });
+    setContacts(result);
+  } catch (error) {
+    console.error("Error fetching contacts:", error);
+  }
+};
 
-    if (!contract) {
-      console.error("Contract not loaded");
-      return;
-    }
 
-    try {
-      const messages = await contract.methods
-        .getMessages(contact.wallet)
-        .call({ from: account });
-      setChatHistory(messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
+const selectContact = async (contact) => {
+  setSelectedContact(contact);
 
-  const addContact = async () => {
-    if (!contract || !newContact.wallet || !newContact.nickname) {
-      console.error("Invalid input or contract not loaded");
-      return;
-    }
+  if (!contract) {
+    console.error("Contract not loaded");
+    return;
+  }
 
-    try {
-      const receipt = await contract.methods
-        .addContact(newContact.wallet, newContact.nickname)
-        .send({ from: account,
-              gas: 5000000,});
+  try {
+    const messages = await contract.methods
+      .getMessages(contact.wallet)
+      .call({ from: account, gas: 6000000 });  // Increased gas limit
+    setChatHistory(messages);
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+  }
+};
 
-      fetchContacts(contract);
-      setNewContact({ wallet: "", nickname: "" });
-    } catch (error) {
-      console.error("Error adding contact:", error);
-    }
-  };
+
+const addContact = async () => {
+  if (!contract || !newContact.wallet || !newContact.nickname) {
+    console.error("Invalid input or contract not loaded");
+    return;
+  }
+
+  try {
+    const receipt = await contract.methods
+      .addContact(newContact.wallet, newContact.nickname)
+      .send({ from: account, gas: 6000000 });  // Increased gas limit
+
+    fetchContacts(contract);
+    setNewContact({ wallet: "", nickname: "" });
+  } catch (error) {
+    console.error("Error adding contact:", error);
+  }
+};
+
 
   useEffect(() => {
     async function loadBlockchainData() {
