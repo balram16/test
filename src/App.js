@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Web3 from "web3";
 import "./App.css";
 
-const contractAddress = "0x903d920b1D0F0F405213067c980Cf7434c5DC04c";
+const contractAddress = "0x31A66E621bC71C92b126e69D63030Dd60d9ed985";
 const contractABI =  [
   {
     "anonymous": false,
